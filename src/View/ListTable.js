@@ -1,5 +1,7 @@
 import React, {useEffect, useState} from 'react'
-import { Checkbox } from 'antd';
+import { Checkbox, Select } from 'antd';
+
+const { Option } = Select;
 
 const API_URL = 'https://api.themoviedb.org/3';
 const API_KEY = 'f88c3ea325f8f97cd9904e5736f56d08';
@@ -7,17 +9,12 @@ const API_KEY = 'f88c3ea325f8f97cd9904e5736f56d08';
 function ListTable(){
 
     const [Movies, setMovies] = useState([])
-    let originMovies = [];
+    const [NewMovies, setNewMovies] = useState([])
+    
     const endpoint = `${API_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=1`;
 
-    useEffect(() => {
-        
-        fetchMovies(endpoint)
-        console.log('useEffect');
-        originMovies = [...Movies];
-
-        console.log('movies in effect ', Movies)
-
+    useEffect(() => {        
+        fetchMovies(endpoint)       
     }, [])
 
     const fetchMovies = (endpoint) => {
@@ -27,11 +24,9 @@ function ListTable(){
         .then(response => {
             console.log(response)
 
-            setMovies([...Movies, ...response.results])
-        })
-        
-        console.log('movies in fetch ', Movies)
-        console.log('origin in fetch ', originMovies)        
+            setMovies([...response.results])
+            setNewMovies([...response.results])
+        })        
     }
 
     const genreList = [
@@ -42,30 +37,27 @@ function ListTable(){
         {label:'Five', value:5}
     ];
 
-    const onChange = (checkedValues) => {        
-
-        console.log('checkedValues ', checkedValues);
-        console.log('Movies ', Movies)
-        originMovies = [...Movies];
-
-        console.log('oringin in onChange', originMovies)
+    const onChange = (checkedValues) => {  
         
-        setMovies(originMovies);
-
-        if(checkedValues.length != 0){
-            const newMovies = Movies.filter(movie => checkedValues.includes(movie.genre_ids.length))
-            console.log('newMovies ', newMovies);
-            setMovies(newMovies);
-
-            console.log('oringin in onChange 2', originMovies)
+        if(checkedValues.length > 0){            
+            const newMovies = NewMovies.filter(movie => checkedValues.includes(movie.genre_ids.length))            
+            setMovies(newMovies)
         }
+        else{
+            setMovies(NewMovies)
+        }        
     }
 
     return (
         <div>
 
-            <Checkbox.Group options={genreList} onChange={onChange} />
-    
+            <Checkbox.Group options={genreList} onChange={onChange} />    
+
+            <Select defaultValue="2" onChange={onChange} style= {{width:120}}>
+                { genreList.map(genre => ( 
+                    <Option key={genre.value}>{genre.label}</Option>
+                  )) }
+            </Select>
 
             <table border="1">
                 <thead>
